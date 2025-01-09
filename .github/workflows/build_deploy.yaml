@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -43,10 +41,14 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
           role-session-name: GithubActionsSession
 
-      - name: Install AWS CLI
+      - name: Update AWS CLI
         run: |
           sudo apt-get update
-          sudo apt-get install -y awscli
+          sudo apt-get install -y unzip curl
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install --update
+          aws --version
 
       - name: Check if ECR repository exists
         id: check_ecr_repo
@@ -76,8 +78,8 @@ jobs:
         uses: docker/build-push-action@v5
         id: build-push-to-ecr
         with:
-          context: todo-app/lambda_function
-          file: todo-app/lambda_function/Dockerfile
+          context: .
+          file: Dockerfile
           push: true
           tags: ${{ env.ECR_REGISTRY }}/${{ env.REPO_NAME }}:${{ steps.sha_short.outputs.sha_short }}
           platforms: linux/amd64
