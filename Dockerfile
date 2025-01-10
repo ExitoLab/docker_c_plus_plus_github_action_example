@@ -1,16 +1,21 @@
 FROM ubuntu:25.04
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update
+RUN apt-get install -y \
     build-essential \
     cmake \
     git \
-    && rm -rf /var/lib/apt/lists/*
+    libgtest-dev
+
+RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY . .
 
-# Build the project
-RUN cmake . && make
+RUN mkdir build
+WORKDIR /app/build
+RUN cmake .. && make
 
+WORKDIR /app/build
 CMD ["./cpp_project"]
